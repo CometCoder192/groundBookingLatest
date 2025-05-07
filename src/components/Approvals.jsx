@@ -1,13 +1,25 @@
 import { useState, useEffect } from 'react';
 import { useTheme } from '../context/ThemeContext';
+import { useNavigate } from 'react-router-dom';
 
 const Approvals = () => {
   const { isDarkMode } = useTheme();
+  const navigate = useNavigate();
   const [approvals, setApprovals] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
+  
+  const userRole = localStorage.getItem('role');
+  const isAdmin = userRole === 'admin';
 
   useEffect(() => {
+    // Check authentication
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+
     // Load bookings from localStorage
     const bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
     const formattedApprovals = bookings.map(booking => ({
@@ -16,14 +28,13 @@ const Approvals = () => {
       date: booking.date,
       timeSlot: `${booking.timeSlot}:00 - ${parseInt(booking.timeSlot) + 1}:00`,
       status: booking.status || 'Pending',
-      authority: getAuthority(booking.groundType),
       name: booking.name,
       email: booking.email,
       purpose: booking.purpose
     }));
     setApprovals(formattedApprovals);
     setLoading(false);
-  }, []);
+  }, [navigate]);
 
   const getGroundTitle = (type) => {
     switch(type) {
@@ -35,19 +46,6 @@ const Approvals = () => {
         return 'Lawn Ground';
       default:
         return 'Ground';
-    }
-  };
-
-  const getAuthority = (groundType) => {
-    switch(groundType) {
-      case 'football':
-        return 'Sports Department';
-      case 'volleyball':
-        return 'Recreation Committee';
-      case 'lawn':
-        return 'Maintenance Team';
-      default:
-        return 'General Administration';
     }
   };
 
@@ -84,7 +82,7 @@ const Approvals = () => {
 
   if (loading) {
     return (
-      <div className={`container ${isDarkMode ? 'dark' : ''}`} style={{ padding: '2rem 0' }}>
+      <div className={`container ${isDarkMode ? 'dark' : ''}`}>
         <div className="loading-spinner">Loading...</div>
       </div>
     );
@@ -92,7 +90,9 @@ const Approvals = () => {
 
   return (
     <div className={`container ${isDarkMode ? 'dark' : ''}`} style={{ padding: '2rem 0' }}>
-      <h1 className="text-center mb-8">Authority Approvals</h1>
+      <h1 className="text-center mb-8">
+        {isAdmin ? 'Booking Approvals' : 'Booking Status'}
+      </h1>
       
       <div className="filters mb-6">
         <button 
@@ -129,16 +129,15 @@ const Approvals = () => {
               <th className="p-4 text-left">Date</th>
               <th className="p-4 text-left">Time Slot</th>
               <th className="p-4 text-left">Booked By</th>
-              <th className="p-4 text-left">Authority</th>
               <th className="p-4 text-left">Status</th>
-              <th className="p-4 text-left">Actions</th>
+              {isAdmin && <th className="p-4 text-left">Actions</th>}
             </tr>
           </thead>
           <tbody>
             {filteredApprovals.length === 0 ? (
               <tr>
-                <td colSpan="7" className="p-4 text-center">
-                  No approvals found
+                <td colSpan={isAdmin ? "6" : "5"} className="p-4 text-center">
+                  No bookings found
                 </td>
               </tr>
             ) : (
@@ -156,28 +155,29 @@ const Approvals = () => {
                       <div className="text-sm opacity-75">{approval.email}</div>
                     </div>
                   </td>
-                  <td className="p-4">{approval.authority}</td>
                   <td className={`p-4 ${getStatusColor(approval.status)}`}>
                     {approval.status}
                   </td>
-                  <td className="p-4">
-                    {approval.status === 'Pending' && (
-                      <div className="action-buttons">
-                        <button
-                          className="approve-btn"
-                          onClick={() => handleStatusChange(approval.id, 'Approved')}
-                        >
-                          Approve
-                        </button>
-                        <button
-                          className="reject-btn"
-                          onClick={() => handleStatusChange(approval.id, 'Rejected')}
-                        >
-                          Reject
-                        </button>
-                      </div>
-                    )}
-                  </td>
+                  {isAdmin && (
+                    <td className="p-4">
+                      {approval.status === 'Pending' && (
+                        <div className="action-buttons">
+                          <button
+                            className="approve-btn"
+                            onClick={() => handleStatusChange(approval.id, 'Approved')}
+                          >
+                            Approve
+                          </button>
+                          <button
+                            className="reject-btn"
+                            onClick={() => handleStatusChange(approval.id, 'Rejected')}
+                          >
+                            Reject
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  )}
                 </tr>
               ))
             )}
@@ -188,4 +188,4 @@ const Approvals = () => {
   );
 };
 
-export default Approvals; 
+export default Approvals;

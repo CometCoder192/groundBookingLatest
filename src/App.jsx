@@ -9,6 +9,7 @@ import Timings from './components/timings';
 import GroundSelection from './components/GroundSelection';
 import TimingSelection from './components/TimingSelection';
 import Approvals from './components/Approvals';
+import ProtectedRoute from './components/ProtectedRoute';
 import { useState } from 'react';
 
 // Import CSS files
@@ -42,11 +43,23 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login onLogin={handleLogin} />} />
             <Route path="/signup" element={<Signup />} />
-            <Route path="/booking" element={<GroundSelection />} />
-            <Route path="/booking/:groundType" element={<BookingForm />} />
+            <Route path="/booking" element={
+              <ProtectedRoute>
+                <GroundSelection />
+              </ProtectedRoute>
+            } />
+            <Route path="/booking/:groundType" element={
+              <ProtectedRoute>
+                <BookingForm />
+              </ProtectedRoute>
+            } />
             <Route path="/timings" element={<TimingSelection />} />
             <Route path="/timings/:groundType" element={<Timings />} />
-            <Route path="/approvals" element={<Approvals />} />
+            <Route path="/approvals" element={
+              <ProtectedRoute>
+                <Approvals />
+              </ProtectedRoute>
+            } />
           </Routes>
         </div>
       </Router>

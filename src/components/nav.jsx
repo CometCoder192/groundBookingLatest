@@ -1,8 +1,17 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 
 const Nav = () => {
   const { isDarkMode, toggleTheme } = useTheme();
+  const navigate = useNavigate();
+  const isAuthenticated = localStorage.getItem('token') !== null;
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
+    localStorage.removeItem('name');
+    navigate('/');
+  };
 
   return (
     <nav className="navbar">
@@ -24,8 +33,14 @@ const Nav = () => {
           >
             {isDarkMode ? '🌞' : '🌙'}
           </button>
-          <Link to="/login" className="nav-btn nav-btn-outline">Login</Link>
-          <Link to="/signup" className="nav-btn nav-btn-primary">Sign Up</Link>
+          {isAuthenticated ? (
+            <button onClick={handleLogout} className="nav-btn nav-btn-outline">Logout</button>
+          ) : (
+            <>
+              <Link to="/login" className="nav-btn nav-btn-outline">Login</Link>
+              <Link to="/signup" className="nav-btn nav-btn-primary">Sign Up</Link>
+            </>
+          )}
         </div>
       </div>
     </nav>

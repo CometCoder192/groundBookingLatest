@@ -6,7 +6,8 @@ const Signup = () => {
     name: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    role: 'student' // Default role
   });
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -19,15 +20,87 @@ const Signup = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   if (formData.password !== formData.confirmPassword) {
+  //     setError('Passwords do not match');
+  //     return;
+  //   }
+  //   // console.log('Signup data:', formData); // Replace with API call
+  //   // navigate('/login');
+  //   try {
+  //     const response = await fetch('http://localhost:5000/api/signup', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify({
+  //         name: formData.name,
+  //         email: formData.email,
+  //         password: formData.password,
+  //         role: formData.role
+  //       }),
+  //     });
+    
+  //     const data = await response.json();
+    
+  //     if (response.ok) {
+  //       localStorage.setItem('token', data.token);
+  //       localStorage.setItem('role', data.role);
+  //       localStorage.setItem('name', data.name);
+  //       navigate('/home'); // or wherever you want after signup
+  //     } else {
+  //       setError(data.message || 'Signup failed');
+  //     }
+  //   } catch (error) {
+  //     console.error(error);
+  //     setError('An error occurred during signup');
+  //   }
+    
+
+
+  // };
+  const handleSubmit = async (e) => {
     e.preventDefault();
+  
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
       return;
     }
-    // Add your signup logic here
-    navigate('/login');
+  
+    try {
+      const response = await fetch('http://localhost:5000/api/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          role: formData.role,
+        }),
+      });
+  
+      const data = await response.json();
+  
+      if (!response.ok) {
+        setError(data.message || 'Signup failed');
+        return;
+      }
+  
+      // Save token & role to localStorage (or Context in future)
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('role', data.role);
+      localStorage.setItem('name', data.name);
+  
+      navigate('/'); // redirect to homepage after successful signup
+    } catch (err) {
+      console.error(err);
+      setError('An error occurred during signup');
+    }
   };
+  
 
   return (
     <div className="container">
@@ -58,6 +131,31 @@ const Signup = () => {
               onChange={handleChange}
               required
             />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Role</label>
+            <div className="form-group form-radio-group">
+              <label>
+                <input
+                  type="radio"
+                  name="role"
+                  value="student"
+                  checked={formData.role === 'student'}
+                  onChange={handleChange}
+                />
+                Student
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="role"
+                  value="admin"
+                  checked={formData.role === 'admin'}
+                  onChange={handleChange}
+                />
+                Admin
+              </label>
+            </div>
           </div>
           <div className="form-group">
             <label className="form-label" htmlFor="password">Password</label>

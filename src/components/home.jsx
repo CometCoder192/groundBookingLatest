@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom';
 
 const Home = () => {
+  const isAuthenticated = localStorage.getItem('token') !== null;
+
   return (
     <div>
       <section className="hero">
@@ -47,10 +49,15 @@ const Home = () => {
         <div className="container">
           <h2 className="cta-title">Ready to Book Your Slot?</h2>
           <p className="cta-description">
-            Join thousands of users who have already booked their ground slots with us.
-            Start your booking journey today!
+            {isAuthenticated 
+              ? "Browse available slots and make your booking now!"
+              : "Join thousands of users who have already booked their ground slots with us."}
           </p>
-          <Link to="/signup" className="btn btn-primary">Get Started</Link>
+          {isAuthenticated ? (
+            <Link to="/booking" className="btn btn-primary">Book a Slot</Link>
+          ) : (
+            <Link to="/signup" className="btn btn-primary">Get Started</Link>
+          )}
         </div>
       </section>
     </div>
